@@ -45,7 +45,7 @@ const run = async () => {
 
     // 3. Start Loop
     fetchPrices(channel); // Run immediately
-    setInterval(() => fetchPrices(channel), 10000); // Then every 10s
+    setInterval(() => fetchPrices(channel),  60000); // Then every 1min
 
   } catch (error) {
     console.error('[PRODUCER] Connection Error:', error);
