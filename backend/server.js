@@ -56,10 +56,27 @@ cron.schedule('0 0 * * *', async () => {
 // --- API Routes (Optional) ---
 app.get('/', (req, res) => res.send('Crypto Backend is Running!'));
 
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.get('/history/:symbol', async (req, res) => {
   const { symbol } = req.params;
   const history = await PriceData.find({ symbol }).sort({ timestamp: -1 }).limit(50);
   res.json(history.reverse());
+});
+
+// --- Keep-Alive Cron Job: Prevent Render from spinning down ---
+const RENDER_URL = process.env.RENDER_URL || 'https://crypto-dashboard-l8i6.onrender.com';
+const axios = require('axios');
+
+cron.schedule('*/14 * * * *', async () => {
+  try {
+    const response = await axios.get(`${RENDER_URL}/api/health`);
+    console.log(`[KEEP-ALIVE] Pinged at ${new Date().toISOString()} — Status: ${response.status}`);
+  } catch (err) {
+    console.error(`[KEEP-ALIVE] Ping failed:`, err.message);
+  }
 });
 
 server.listen(PORT, () => {
